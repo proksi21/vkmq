@@ -4,13 +4,13 @@
 
 (import :std/net/httpd
         :std/net/address
-	    :std/net/request
-	    :std/net/uri
+	:std/net/request
+	:std/net/uri
         :std/text/json
-	    :std/text/utf8
+	:std/text/utf8
         :std/sugar
         :std/getopt
-	    :std/misc/channel
+	:std/misc/channel
         :gerbil/gambit/threads)
 
 (export main)
@@ -36,20 +36,20 @@
     (cond
      ((equal? (hash-get request-hash 'type) "confirmation")
       (http-response-write res 200 [["Content-Type" . "text/plain"]]
-	    confirm-token))
+	confirm-token))
      ((equal? (hash-get request-hash 'type) "message_new")
       (http-response-write res 200 [["Content-Type" . "text/plain"]]
         "ok")
       (let* ((user
-	            (hash-ref (hash-ref request-hash 'object) 'from_id))
-	         (msg
-	            (hash-ref (hash-ref request-hash 'object) 'text))
-	         (reply
-	            (json-object->string
-	                (list->hash-table
-		                [[(number->string user) . msg]]))))
-	    (displayln reply)
-	    (channel-put mq reply))))))
+	     	(hash-ref (hash-ref request-hash 'object) 'from_id))
+	     (msg
+	        (hash-ref (hash-ref request-hash 'object) 'text))
+	     (reply
+	        (json-object->string
+	   		(list->hash-table
+		        	[[(number->string user) . msg]]))))
+	(displayln reply)
+	(channel-put mq reply))))))
 
 ;; /vkmq
 (def (vkmq-handler req res)
@@ -69,15 +69,15 @@
 (def (main . args)
   (def gopt
     (getopt 
-        (option 'address "-a" "--address"
-            help: "server address"
-            default: "178.62.204.208:80")
-	    (option 'secret "-s" "--secret"
-		    help: "secret token for vkmq"
-		    default: "SUPER_SECRET")
-	    (option 'token "-c" "--confirm-token"
-		    help: "string to return to vk (confirmation)"
-		    default: "a1s2d3")))
+     (option 'address "-a" "--address"
+              help: "server address"
+              default: "178.62.204.208:80")
+     (option 'secret "-s" "--secret"
+              help: "secret token for vkmq"
+	      default: "SUPER_SECRET")
+     (option 'token "-c" "--confirm-token"
+	      help: "string to return to vk (confirmation)"
+	      default: "a1s2d3")))
 
   (def opt (getopt-parse gopt args))
   (set! confirm-token (hash-get opt 'token))
