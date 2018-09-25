@@ -63,7 +63,7 @@
 
 ;; default
 (def (default-handler req res)
-  (http-response-write res 404 '(("Content-Type" . "text/plain"))
+  (http-response-write res 404 [["Content-Type" . "text/plain"]]
     "these aren't the droids you are looking for.\n"))
 
 (def (main . args)
