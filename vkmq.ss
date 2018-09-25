@@ -4,13 +4,13 @@
 
 (import :std/net/httpd
         :std/net/address
-	:std/net/request
-	:std/net/uri
+	    :std/net/request
+	    :std/net/uri
         :std/text/json
-	:std/text/utf8
+	    :std/text/utf8
         :std/sugar
         :std/getopt
-	:std/misc/channel
+	    :std/misc/channel
         :gerbil/gambit/threads)
 
 (export main)
@@ -36,7 +36,7 @@
     (cond
      ((equal? (hash-get request-hash 'type) "confirmation")
       (http-response-write res 200 [["Content-Type" . "text/plain"]]
-	confirm-token))
+	    confirm-token))
      ((equal? (hash-get request-hash 'type) "message_new")
       (http-response-write res 200 [["Content-Type" . "text/plain"]]
         "ok")
