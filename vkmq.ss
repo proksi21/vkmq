@@ -4,13 +4,13 @@
 
 (import :std/net/httpd
         :std/net/address
-	    :std/net/request
-	    :std/net/uri
+	:std/net/request
+	:std/net/uri
         :std/text/json
-	    :std/text/utf8
+	:std/text/utf8
         :std/sugar
         :std/getopt
-	    :std/misc/channel
+	:std/misc/channel
         :gerbil/gambit/threads)
 
 (export main)
@@ -36,7 +36,7 @@
     (cond
      ((equal? (hash-get request-hash 'type) "confirmation")
       (http-response-write res 200 [["Content-Type" . "text/plain"]]
-	    confirm-token))
+	confirm-token))
      ((equal? (hash-get request-hash 'type) "message_new")
       (http-response-write res 200 [["Content-Type" . "text/plain"]]
         "ok")
@@ -46,8 +46,8 @@
 	        (hash-ref (hash-ref request-hash 'object) 'text))
 	     (reply
 	        (json-object->string
-	   		(list->hash-table
-		        	[[(number->string user) . msg]]))))
+	   	  (list->hash-table
+		    [[(number->string user) . msg]]))))
 	(displayln reply)
 	(channel-put mq reply))))))
 
@@ -55,11 +55,11 @@
 (def (vkmq-handler req res)
   (cond
    ((equal? (http-request-params req) secret-token)
-    (http-response-write res 200 [["Content-Type" . "application/json"]]
-      (channel-try-get mq)))
+      (http-response-write res 200 [["Content-Type" . "application/json"]]
+        (channel-try-get mq)))
    (else
-    (http-response-write res 404 [["Content-Type" . "text/plain"]]
-      "these aren't the droids you are looking for.\n"))))
+      (http-response-write res 404 [["Content-Type" . "text/plain"]]
+        "these aren't the droids you are looking for.\n"))))
 
 ;; default
 (def (default-handler req res)
