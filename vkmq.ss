@@ -33,9 +33,7 @@
         (http-response-write res 200 [["Content-Type" . "text/plain"]] confirm-token))
       ((equal? (hash-get request-hash 'type) "message_new")
         (http-response-write res 200 [["Content-Type" . "text/plain"]] "ok")
-        (let* ((user (hash-ref (hash-ref request-hash 'object) 'from_id))
-               (msg (hash-ref (hash-ref request-hash 'object) 'text))
-               (reply (json-object->string (list->hash-table [[(number->string user) . msg]]))))
+        (let ((reply (json-object->string request-hash)))
           (displayln reply)
           (channel-put mq reply))))))
 
