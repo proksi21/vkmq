@@ -11,13 +11,13 @@
         :std/sugar
         :std/getopt
         :std/misc/channel
+	:std/misc/sync
         :gerbil/gambit/threads)
 
 (export main)
 
 (def mq (make-channel))
-(def secret-token "asdf")
-(def confirm-token "asdf")
+(def tokens (make-sync-hash (hash)))
 
 (def (run address)
   (let (httpd (start-http-server! address mux: (make-default-http-mux default-handler)))
@@ -30,7 +30,7 @@
   (let ((request-hash (read-json (open-input-string (utf8->string (http-request-body req))))))
     (cond
       ((equal? (hash-get request-hash 'type) "confirmation")
-        (http-response-write res 200 [["Content-Type" . "text/plain"]] confirm-token))
+        (http-response-write res 200 [["Content-Type" . "text/plain"]] (sync-hash-get tokens "confirm-token")))
       ((equal? (hash-get request-hash 'type) "message_new")
         (http-response-write res 200 [["Content-Type" . "text/plain"]] "ok")
         (let ((reply (json-object->string request-hash)))
@@ -39,15 +39,16 @@
 
 ;; /vkmq
 (def (vkmq-handler req res)
-  (cond
-    ((equal? (http-request-params req) secret-token)
-      (http-response-write res 200 [["Content-Type" . "application/json"]] (channel-try-get mq)))
-    (else
-      (http-response-write res 404 [["Content-Type" . "text/plain"]] "these aren't the droids you are looking for.\n"))))
+  (let (token (hash-get (list->hash-table (form-url-decode (http-request-params req))) "token"))
+    (cond
+      ((equal? token (sync-hash-get tokens "secret-token"))
+        (http-response-write res 200 [["Content-Type" . "application/json"]] (channel-try-get mq)))
+      (else
+        (http-response-write res 404 [["Content-Type" . "text/plain"]] "these aren't the droids you are looking for.")))))
 
 ;; default
 (def (default-handler req res)
-  (http-response-write res 404 [["Content-Type" . "text/plain"]] "these aren't the droids you are looking for.\n"))
+  (http-response-write res 404 [["Content-Type" . "text/plain"]] "these aren't the droids you are looking for."))
 
 (def (main . args)
   (def gopt (getopt (option 'address "-a" "--address"
@@ -61,8 +62,8 @@
                             default: "a1s2d3")))
 
   (def opt (getopt-parse gopt args))
-  (set! confirm-token (hash-get opt 'token))
-  (set! secret-token (hash-get opt 'secret))
+  (sync-hash-put! tokens "confirm-token" (hash-get opt 'token))
+  (sync-hash-put! tokens "secret-token" (hash-get opt 'secret))
   
   (try (run (hash-get opt 'address))
     (catch (getopt-error? exn)
