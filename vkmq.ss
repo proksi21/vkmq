@@ -11,7 +11,7 @@
         :std/sugar
         :std/getopt
         :std/misc/channel
-	:std/misc/sync
+        :std/misc/sync
         :gerbil/gambit/threads)
 
 (export main)
@@ -30,25 +30,40 @@
   (let ((request-hash (read-json (open-input-string (utf8->string (http-request-body req))))))
     (cond
       ((equal? (hash-get request-hash 'type) "confirmation")
-        (http-response-write res 200 [["Content-Type" . "text/plain"]] (sync-hash-get tokens "confirm-token")))
+       (http-response-write res
+                            200
+                            [["Content-Type" . "text/plain"]]
+                            (sync-hash-get tokens "confirm-token")))
       ((equal? (hash-get request-hash 'type) "message_new")
-        (http-response-write res 200 [["Content-Type" . "text/plain"]] "ok")
-        (let ((reply (json-object->string request-hash)))
-          (displayln reply)
-          (channel-put mq reply))))))
+       (http-response-write res
+                            200
+                            [["Content-Type" . "text/plain"]]
+                            "ok")
+       (let ((reply (json-object->string request-hash)))
+         (displayln reply)
+         (channel-put mq reply))))))
 
 ;; /vkmq
 (def (vkmq-handler req res)
   (let (token (hash-get (list->hash-table (form-url-decode (http-request-params req))) "token"))
     (cond
       ((equal? token (sync-hash-get tokens "secret-token"))
-        (http-response-write res 200 [["Content-Type" . "application/json"]] (channel-try-get mq)))
+       (http-response-write res
+                            200
+                            [["Content-Type" . "application/json"]]
+                            (channel-try-get mq)))
       (else
-        (http-response-write res 404 [["Content-Type" . "text/plain"]] "these aren't the droids you are looking for.")))))
+       (http-response-write res
+                            404
+                            [["Content-Type" . "text/plain"]]
+                            "these aren't the droids you are looking for.")))))
 
 ;; default
 (def (default-handler req res)
-  (http-response-write res 404 [["Content-Type" . "text/plain"]] "these aren't the droids you are looking for."))
+  (http-response-write res
+                       404
+                       [["Content-Type" . "text/plain"]]
+                       "these aren't the droids you are looking for."))
 
 (def (main . args)
   (def gopt (getopt (option 'address "-a" "--address"
