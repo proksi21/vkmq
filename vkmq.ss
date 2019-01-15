@@ -41,7 +41,7 @@
                             "ok")
        (let ((reply (json-object->string request-hash)))
          (displayln reply)
-         (channel-put mq reply))))))
+         (channel-try-put mq reply))))))
 
 ;; /vkmq
 (def (vkmq-handler req res)
